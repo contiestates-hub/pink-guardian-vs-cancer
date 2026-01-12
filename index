@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pink Guardian vs Cancer</title>
+<style>
+body {
+  margin: 0;
+  background: #0f0f14;
+  color: white;
+  font-family: Arial;
+  text-align: center;
+}
+canvas {
+  background: linear-gradient(#1a001a, #330033);
+  display: block;
+  margin: auto;
+}
+.controls {
+  display: flex;
+  justify-content: space-around;
+  margin: 10px;
+}
+button {
+  font-size: 24px;
+  padding: 10px 20px;
+  background: hotpink;
+  border: none;
+  border-radius: 8px;
+  color: white;
+}
+</style>
+</head>
+
+<body>
+
+<h2>🎀 Pink Guardian vs Cancer Devils 🎀</h2>
+<p>Fight cancer. Spread hope.</p>
+
+<canvas id="game" width="360" height="500"></canvas>
+
+<div class="controls">
+  <button onclick="moveLeft()">⬅️</button>
+  <button onclick="moveRight()">➡️</button>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = { x: 160, y: 440, w: 40, h: 40 };
+let bullets = [];
+let enemies = [];
+let score = 0;
+let gameOver = false;
+
+// Touch shoot
+canvas.addEventListener("touchstart", shoot);
+document.addEventListener("keydown", e => {
+  if (e.key === " ") shoot();
+  if (e.key === "ArrowLeft") moveLeft();
+  if (e.key === "ArrowRight") moveRight();
+});
+
+function shoot() {
+  bullets.push({ x: player.x + 18, y: player.y });
+}
+
+function moveLeft() {
+  player.x = Math.max(0, player.x - 25);
+}
+
+function moveRight() {
+  player.x = Math.min(canvas.width - player.w, player.x + 25);
+}
+
+// Spawn cancer devils
+setInterval(() => {
+  enemies.push({ x: Math.random() * 330, y: 0 });
+}, 900);
+
+function drawPlayer() {
+  ctx.fillStyle = "pink";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  ctx.fillStyle = "white";
+  ctx.fillText("🎀", player.x + 12, player.y + 28);
+}
+
+function drawBullets() {
+  ctx.fillStyle = "#ff99cc";
+  bullets.forEach(b => {
+    b.y -= 7;
+    ctx.fillRect(b.x, b.y, 4, 12);
+  });
+}
+
+function drawEnemies() {
+  ctx.fillStyle = "#ff4444";
+  enemies.forEach(e => {
+    e.y += 2.5;
+    ctx.fillRect(e.x, e.y, 30, 30);
+    ctx.fillStyle = "black";
+    ctx.fillText("👿", e.x + 6, e.y + 22);
+    ctx.fillStyle = "#ff4444";
+    if (e.y > canvas.height) gameOver = true;
+  });
+}
+
+function detectCollision() {
+  bullets.forEach((b, bi) => {
+    enemies.forEach((e, ei) => {
+      if (
+        b.x < e.x + 30 &&
+        b.x + 4 > e.x &&
+        b.y < e.y + 30 &&
+        b.y + 12 > e.y
+      ) {
+        bullets.splice(bi, 1);
+        enemies.splice(ei, 1);
+        score += 10;
+      }
+    });
+  });
+}
+
+function drawHUD() {
+  ctx.fillStyle = "white";
+  ctx.fillText("Score: " + score, 10, 20);
+}
+
+function drawMessage() {
+  ctx.fillStyle = "hotpink";
+  ctx.font = "22px Arial";
+  ctx.fillText("Hope Is Stronger 💗", 70, 260);
+}
+
+function gameLoop() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  if (gameOver) {
+    drawMessage();
+    return;
+  }
+
+  drawPlayer();
+  drawBullets();
+  drawEnemies();
+  detectCollision();
+  drawHUD();
+
+  requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
